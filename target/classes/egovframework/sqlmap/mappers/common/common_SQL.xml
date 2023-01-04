@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.fusion.cmmn.service.CommonMapper">
+	
+	<select id="getCommonGpList" resultType="commonGroupVo">
+		SELECT GP_CODE
+			,  GP_NM
+			,  GP_DESC
+			,  GP_REG_DATE
+			,  GP_MOD_DATE
+			,  GP_DELYN
+		FROM COMMON_GROUP
+		WHERE GP_DELYN = 'N'
+		<if test="cri.searchCnd != null and cri.searchCnd != ''">
+			<choose>
+				<when test="cri.searchCnd == 'GP_CODE'">
+					AND GP_CODE LIKE '%'||#{cri.searchKeyword}||'%'
+				</when>
+				<when test="cri.searchCnd == 'GP_NM'">
+					AND GP_NM LIKE '%'||#{cri.searchKeyword}||'%'
+				</when>
+				<when test="cri.searchCnd == 'ALL'">
+					AND (GP_CODE LIKE '%'||#{cri.searchKeyword}||'%'
+					OR GP_NM LIKE '%'||#{cri.searchKeyword}||'%')
+				</when>	
+			</choose>
+		</if>
+		ORDER BY GP_REG_DATE DESC
+	</select>
+	
+	<select id="getGpCnt" resultType="Integer">
+		SELECT COUNT(*)
+		FROM COMMON_GROUP
+	</select>
+	
+	<select id="getCommonCdList" resultType="commonCodeVo">
+		SELECT CD_CODE
+			,  CD_NM
+			,  CD_DESC
+			,  CD_ORDER
+			,  TO_DATE(TO_CHAR(CD_REG_DATE, 'yyyy-mm-dd')) CD_REG_DATE
+			,  CD_MOD_DATE
+			,  CD_DELYN
+		FROM COMMON_CODE
+		WHERE GP_CODE = #{gpCode}
+			AND CD_DELYN = 'N'
+		ORDER BY CD_ORDER
+	</select>
+	
+	<select id="getCommonGp" parameterType="commonGroupVo" resultType="commonGroupVo">
+		SELECT GP_CODE AS ORI_GP_CODE
+			,  GP_CODE
+			,  GP_NM
+			,  GP_DESC
+			,  GP_REG_DATE
+			,  GP_MOD_DATE
+		FROM COMMON_GROUP
+		WHERE GP_CODE = #{gpCode}
+	</select>
+	
+	<select id="getCommonCd" parameterType="commonCodeVo" resultType="commonCodeVo">
+		SELECT CD_CODE AS ORI_CD_CODE
+			,  CD_CODE
+			,  CD_NM
+			,  CD_DESC
+			,  CD_REG_DATE
+			,  CD_MOD_DATE
+			,  GP_CODE
+		FROM COMMON_CODE
+		WHERE GP_CODE = #{gpCode} 
+			AND	CD_CODE = #{cdCode}
+	</select>
+	
+	<select id="getCommonCdCnt" parameterType="commonGroupVo" resultType="commonGroupVo">
+		SELECT COUNT(*) CD_COUNT, GP_CODE
+		FROM COMMON_CODE
+		GROUP BY GP_CODE
+		HAVING GP_CODE = #{gpCode}
+	</select>
+	
+	<insert id="insGroup" parameterType="commonGroupVo">
+		INSERT INTO COMMON_GROUP (
+								  GP_CODE
+								, GP_NM
+								, GP_DESC
+								, GP_REG_DATE
+								, GP_DELYN
+								  )
+						  VALUES (
+								  #{gpCode}
+								, #{gpNm}
+								, #{gpDesc}
+								, SYSTIMESTAMP
+								, 'N'
+								  )
+	</insert>
+	
+	<insert id="insCode" parameterType="commonCodeVo">
+		INSERT INTO COMMON_CODE (
+								 GP_CODE
+							   , CD_CODE
+							   , CD_NM
+							   , CD_ORDER
+							   , CD_DESC
+							   , CD_REG_DATE
+							   , CD_DELYN
+								)
+					VALUES      (
+								#{gpCode}
+							  , #{cdCode}
+							  , #{cdNm}
+							  , (SELECT NVL(MAX(CD_ORDER), 0) + 1
+							  	 FROM COMMON_CODE
+							  	 WHERE GP_CODE = #{gpCode})
+							  , #{cdDesc}
+							  , SYSTIMESTAMP
+							  , 'N'
+								)
+	</insert>
+	
+	<update id="updGroup" parameterType="commonGroupVo">	
+		UPDATE COMMON_GROUP
+		SET GP_CODE = #{gpCode}
+		  , GP_NM = #{gpNm}
+		  , GP_DESC = #{gpDesc}
+		  , GP_MOD_DATE = SYSTIMESTAMP
+		WHERE GP_CODE = #{oriGpCode}
+	</update>
+	
+	<update id="updCode" parameterType="commonCodeVo">
+		UPDATE COMMON_CODE
+		<set>
+		  <if test="cdOrder != null and cdOrder != ''">
+		  CD_ORDER = #{cdOrder},
+		  </if>
+		  <if test="cdCode != null and cdCode != ''">
+		  CD_CODE = #{cdCode},
+		  </if>
+		  <if test="cdNm != null and cdNm != ''">
+		  CD_NM = #{cdNm},
+		  </if>
+		  <if test="cdDesc != null and cdDesc != ''">
+		  CD_DESC = #{cdDesc},
+		  </if> 
+		  CD_MOD_DATE = SYSTIMESTAMP
+		</set>
+		WHERE GP_CODE = #{gpCode}
+		AND CD_CODE = #{oriCdCode}
+	</update>
+	
+	<delete id="delGroup" parameterType="commonGroupVo">
+		UPDATE COMMON_GROUP
+		SET GP_DELYN = 'Y'
+		WHERE GP_CODE = #{gpCode}
+	</delete>
+	
+	<delete id="delCode" parameterType="commonCodeVo">
+		UPDATE COMMON_CODE
+		SET CD_DELYN = 'Y'
+		WHERE CD_CODE = #{cdCode}
+	</delete>
+	
+</mapper>

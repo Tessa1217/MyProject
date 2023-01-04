@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.fusion.survey.service.SurveyMapper">
+	
+	<sql id="surveySearch">
+		<where>
+			<if test="searchCnd == 'SURVEY_TITLE'">
+				AND SURVEY_TITLE LIKE '%'||#{searchKeyword}||'%'
+			</if>
+			<if test="searchCnd == 'SURVEY_OWNER_NAME'">
+				AND SURVEY_OWNER_NO = (SELECT USER_NO
+									 FROM BOARD_USER 
+									 WHERE USER_NAME = #{searchKeyword})
+			</if>
+			<if test="searchCnd == 'ALL' || searchCnd == 'TOTAL_SEARCH'">
+				AND SURVEY_TITLE LIKE '%'||#{searchKeyword}||'%'
+				OR SURVEY_OWNER_NO = (SELECT USER_NO
+									 FROM BOARD_USER 
+									 WHERE USER_NAME = #{searchKeyword})
+			</if>
+		</where>
+	</sql>
+	
+	<select id="getSurveyList" resultType="surveyVo">
+		SELECT * FROM 
+				(SELECT ROWNUM 
+					  , A.SURVEY_NO
+					  , A.PARTICIPANT_TYPE
+					  , (SELECT CD_NM FROM COMMON_CODE WHERE GP_CODE = 'SUR_P_TYPE' AND CD_CODE = A.PARTICIPANT_TYPE) PARTICIPANT_TYPE_DESC
+					  , (SELECT USER_NAME FROM BOARD_USER WHERE USER_NO = A.SURVEY_OWNER_NO) SURVEY_OWNER_NAME
+					  , A.SURVEY_TITLE
+					  , A.SURVEY_DESC
+					  , A.SURVEY_START_DATE
+					  , A.SURVEY_END_DATE
+				FROM SURVEY A
+				<if test="searchCnd != null and searchCnd != ''">
+					<include refid="surveySearch"></include>
+				</if>)
+		WHERE ROWNUM BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+	<select id="getSurveyCnt" resultType="Integer">
+		SELECT COUNT(*)
+		FROM SURVEY
+		<if test="searchCnd != null and searchCnd != ''">
+			<include refid="surveySearch"></include>
+		</if>
+	</select>
+	
+	<select id="selectSurvey" resultType="surveyVo" parameterType="surveyVo">
+		SELECT A.SURVEY_NO
+				, A.PARTICIPANT_TYPE
+				, (SELECT CD_NM FROM COMMON_CODE WHERE GP_CODE = 'SUR_P_TYPE' AND CD_CODE = A.PARTICIPANT_TYPE) PARTICIPANT_TYPE_DESC
+				, (SELECT USER_NAME FROM BOARD_USER WHERE USER_NO = A.SURVEY_OWNER_NO) SURVEY_OWNER_NAME
+				, A.SURVEY_TITLE
+				, A.SURVEY_DESC
+				, A.SURVEY_START_DATE
+				, A.SURVEY_END_DATE
+				, CEIL(TO_DATE(TO_CHAR(SURVEY_END_DATE,'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS') - TO_DATE(TO_CHAR(SURVEY_START_DATE,'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS')) DATE_DIFFERENCE
+				, SURVEY_END_DATE + 3 WINNER_DATE
+				, (SELECT COUNT(*) FROM SURVEY_QUESTION WHERE SURVEY_NO = #{surveyNo} AND PARENT_QUESTION_NO = 0) QUESTION_LENGTH
+		FROM SURVEY A
+		WHERE SURVEY_NO = #{surveyNo}
+			AND SYSTIMESTAMP BETWEEN A.SURVEY_START_DATE AND A.SURVEY_END_DATE
+	</select>
+	
+	<select id="selectSurveySubmit" resultType="surveySubmitVo">
+		SELECT SURVEY_NO,
+				SUBMITTER_NO
+		FROM SURVEY_SUBMIT
+		WHERE SURVEY_NO = #{surveyNo}
+			AND SUBMITTER_NO = #{submitterNo}				
+	</select>
+	
+	<select id="getQuestionList" resultType="surveyQuestionVo">
+		SELECT * FROM (
+							SELECT ROW_NUMBER() OVER (ORDER BY ROWNUM DESC) RN
+							 , LEVEL QUESTION_LEVEL
+							 , CONNECT_BY_ISLEAF
+							 , A.SURVEY_NO
+							 , A.QUESTION_NO
+							 , A.QUESTION_TYPE_NO
+							 , A.CATEGORY_NO
+							 , (SELECT CODE_NM FROM COMMON_CODE WHERE GP_NO = 3 AND CODE_ORDER = A.CATEGORY_NO) CATEGORY_DESC
+							 , A.QUESTION_CONTENT
+							 , A.QUESTION_ORDER
+							 , (SELECT QUESTION_ORDER FROM SURVEY_QUESTION WHERE QUESTION_NO = A.PARENT_QUESTION_NO) PARENT_QUESTION_NO
+							 , A.QUESTION_REQYN
+							 , A.QUESTION_ANS_CNT
+						FROM SURVEY_QUESTION A
+						WHERE SURVEY_NO = #{question.surveyNo}
+						START WITH A.PARENT_QUESTION_NO = 0
+						CONNECT BY PRIOR A.QUESTION_NO = A.PARENT_QUESTION_NO
+						ORDER BY QUESTION_NO, QUESTION_ORDER)
+		WHERE RN BETWEEN #{cri.startRow} + (
+												SELECT COUNT(*)
+												FROM (SELECT ROW_NUMBER() OVER (ORDER BY ROWNUM DESC) RN,
+																CONNECT_BY_ISLEAF LEAF
+																FROM SURVEY_QUESTION 
+																START WITH PARENT_QUESTION_NO = 0
+																CONNECT BY PRIOR QUESTION_NO = PARENT_QUESTION_NO)
+												WHERE RN <![CDATA[<]]> #{cri.startRow} 
+													AND LEAF = 0
+											)
+			AND 
+						#{cri.endRow} + (
+											SELECT COUNT(*)
+											FROM (SELECT ROW_NUMBER() OVER (ORDER BY ROWNUM DESC) RN,
+														CONNECT_BY_ISLEAF LEAF
+												  FROM SURVEY_QUESTION 
+												  START WITH PARENT_QUESTION_NO = 0
+												  CONNECT BY PRIOR QUESTION_NO = PARENT_QUESTION_NO)
+												  WHERE RN BETWEEN #{cri.startRow} 
+												  	AND #{cri.endRow} 
+													AND LEAF = 0
+										 )
+	</select>
+	
+	<select id="getQuestionCnt" resultType="Integer">
+		SELECT COUNT(*)
+		FROM SURVEY_QUESTION
+		WHERE SURVEY_NO = #{surveyNo}
+	</select>
+	
+	<select id="getSubmitCnt" resultType="Integer">
+		SELECT COUNT(*) SUBMIT_CNT
+		FROM SURVEY_SUBMIT
+		WHERE SURVEY_NO = #{surveyNo}
+	</select>
+	
+	<select id="getAnswerResultList" resultType="SurveyAnswerVo">
+		SELECT SURVEY_NO
+			,  QUESTION_NO
+			,  OPTION_NO
+			,  COUNT(*) ANSWER_CNT
+		FROM SURVEY_ANSWER A
+		GROUP BY SURVEY_NO
+			  ,  QUESTION_NO
+			  ,  OPTION_NO
+		HAVING SURVEY_NO = #{surveyNo}
+	</select>
+	
+	<select id="getOptionList" resultType="surveyOptionVo">
+		SELECT SURVEY_NO
+			,  QUESTION_NO
+			,  OPTION_NO
+			,  OPTION_ORDER
+			,  OPTION_CONTENT
+			,  OPTION_TYPE_NO
+		FROM SURVEY_QUESTION_OPTION
+		WHERE QUESTION_NO = #{questionNo}
+		ORDER BY SURVEY_NO, QUESTION_NO, OPTION_ORDER
+	</select>
+	
+	<select id="getAnswerList" resultType="surveyAnswerVo">
+		SELECT ANSWER_NO
+			,  SURVEY_NO
+			,  QUESTION_NO
+			,  SUBMITTER_NO
+			,  OPTION_NO
+			,  ANSWER_TEXT
+		FROM SURVEY_ANSWER
+		WHERE 
+			<if test="submitterNo != null and submitterNo != ''">
+			SURVEY_NO = #{surveyNo}
+			AND SUBMITTER_NO = #{submitterNo}
+			AND QUESTION_NO = #{questionNo}
+			</if>
+			<if test="submitterNo == null or submitterNo == ''">
+			SURVEY_NO = #{surveyNo}
+			AND QUESTION_NO = #{questionNo}
+			</if>
+	</select>
+	
+	<select id="getRequiredQuestionCnt" parameterType="surveyQuestionVo" resultType="Integer">
+		SELECT COUNT(*)
+		FROM SURVEY_QUESTION
+		WHERE SURVEY_NO = #{surveyNo}
+			AND QUESTION_REQYN = 'Y' 
+	</select>
+	
+	<select id="getCompleteQuestionCnt" parameterType="surveyAnswerVo" resultType="Integer">
+		SELECT COUNT(DISTINCT QUESTION_NO)
+		FROM SURVEY_ANSWER
+		WHERE SURVEY_NO = #{surveyNo}
+			AND SUBMITTER_NO = #{submitterNo}
+			AND QUESTION_NO IN (SELECT QUESTION_NO
+								FROM SURVEY_QUESTION
+								WHERE SURVEY_NO = #{surveyNo}
+									AND QUESTION_REQYN = 'Y')
+	</select>
+	
+	<insert id="insSurveyAnswer" parameterType="surveyAnswerVo">
+		INSERT INTO SURVEY_ANSWER (
+									ANSWER_NO
+								  , SURVEY_NO
+								  , QUESTION_NO
+								  , SUBMITTER_NO
+								  , OPTION_NO
+								  , ANSWER_TEXT
+								   )
+					VALUES (
+							ANS_NO_SEQ.NEXTVAL
+						  , #{surveyNo}
+						  , #{questionNo}
+						  , #{submitterNo}
+						  , #{optionNo}
+						  , #{answerText}
+							)
+	</insert>
+	
+	<insert id="insSurveySubmit" parameterType="surveySubmitVo">
+		INSERT INTO SURVEY_SUBMIT (
+									  SURVEY_NO
+									, SUBMITTER_NO
+									, SUBMIT_REG_DATE
+									, SUBMIT_MOD_DATE
+									)
+					VALUES (
+							  #{surveyNo}
+							, #{submitterNo}
+							, DEFAULT
+							, NULL
+							)
+	</insert>
+	
+	<update id="updSurveySubmit">
+		UPDATE SURVEY_SUBMIT 
+		SET SUBMIT_MOD_DATE = SYSTIMESTAMP
+		WHERE SURVEY_NO = #{surveyNo}
+			AND SUBMITTER_NO = #{submitterNo}
+	</update>
+	
+	<delete id="delSurveyAnswer">
+		DELETE FROM SURVEY_ANSWER
+		WHERE SURVEY_NO = #{survey.surveyNo}
+			AND SUBMITTER_NO = #{survey.submitterNo}
+			<if test="list != null">
+				<foreach collection="list" item="item" separator="," open="AND QUESTION_NO IN (" close=")">
+					#{item.questionNo}
+				</foreach>
+			</if>
+	</delete>
+	
+</mapper>

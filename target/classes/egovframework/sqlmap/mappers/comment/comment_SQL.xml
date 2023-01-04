@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.fusion.comment.service.CommentMapper">
+	<select id="getCommentList" parameterType="commentVo" resultType="commentVo">
+		SELECT LEVEL AS COMMENT_LEVEL
+			   , A.COMMENT_NO
+			   , A.BOARD_NO
+			   , A.USER_NO
+			   , B.USER_NAME
+			   , A.COMMENT_CONTENT
+			   , A.COMMENT_REG_DATE
+			   , A.COMMENT_MOD_DATE
+			   , A.COMMENT_PARENT_NO
+			   , A.COMMENT_DELYN
+			   , CONNECT_BY_ISLEAF COMMENT_IS_LEAF
+			 FROM BOARD_COMMENT A
+			 	, BOARD_USER B
+		WHERE 1 = 1
+			 AND A.USER_NO = B.USER_NO
+			 AND A.BOARD_NO = #{boardNo}
+			 START WITH A.COMMENT_PARENT_NO = 0
+		CONNECT BY PRIOR A.COMMENT_NO = A.COMMENT_PARENT_NO
+		ORDER SIBLINGS BY A.COMMENT_NO
+	</select>
+	
+	<select id="getComment" parameterType="commentVo" resultType="commentVo">
+		SELECT COMMENT_CONTENT
+			,  COMMENT_MOD_DATE
+		FROM BOARD_COMMENT
+		WHERE COMMENT_NO = #{commentNo}
+	</select>
+
+	<insert id="insComment" parameterType="commentVo">
+		INSERT INTO BOARD_COMMENT
+							VALUES (
+									SEQ_BOARD_COMMENT.NEXTVAL
+									, #{boardNo}
+									, #{userNo}
+									,#{commentContent}
+									, DEFAULT
+									, NULL
+									, DEFAULT
+									, #{commentParentNo})
+	</insert>
+
+	<update id="updComment" parameterType="commentVo">
+		UPDATE BOARD_COMMENT SET 
+			  COMMENT_CONTENT = #{commentContent}
+			, COMMENT_MOD_DATE = SYSTIMESTAMP
+		WHERE COMMENT_NO = #{commentNo}
+	</update>
+
+	<delete id="delComment" parameterType="commentVo">
+		UPDATE BOARD_COMMENT
+			SET COMMENT_DELYN = 'Y'
+		<where>
+			<choose>
+				<when test="commentNo == '' || commentNo == 0">
+					BOARD_NO = #{boardNo}
+				</when>
+				<otherwise>
+					COMMENT_NO = #{commentNo}
+				</otherwise>
+			</choose>
+		</where>
+	</delete>
+
+</mapper>

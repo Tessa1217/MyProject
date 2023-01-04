@@ -1,0 +1,917 @@
+@charset "UTF-8";
+
+.welcome {
+	min-height: 800px;
+	position: relative;
+}
+
+.welcome video {
+	margin: 20px;
+	width: 70%;
+}
+
+@
+keyframes blink-effect { 50% {
+	opacity: 0.5;
+}
+
+}
+.welcome h1 {
+	font-weight: bold;
+	font-size: 60px;
+	z-index: 80;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	color: white;
+	transform: translate(-50%, -50%);
+	animation: blink-effect 1s step-end infinite;
+}
+
+section.loginForm, section.signInForm {
+	background-color: #ADD8E6;
+}
+
+section.signInForm .check-msg {
+	color: red;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+section.signInForm .check-msg.check-success {
+	color: green;
+}
+
+nav.navbar div.mx-3:last-child a {
+	float: right;
+	border: 2px solid white;
+	color: white;
+	padding: 8px;
+	text-decoration: none;
+}
+
+nav.navbar div.mx-3:last-child a:hover {
+	font-weight: bold;
+	border: 3px solid white;
+}
+
+nav.navbar i, nav.navbar a.nav-link {
+	color: white;
+}
+
+.boardList .table {
+	table-layout: fixed;
+}
+
+.boardList thead, tbody {
+	text-align: center;
+}
+
+.boardList th:first-child, .boardList th:nth-child(4) {
+	width: 10%;
+}
+
+.boardList th:nth-child(2) {
+	width: 50%;
+}
+
+.boardList th:nth-child(3), .boardList th:last-child {
+	width: 15%;
+}
+
+.boardList td:nth-child(2) {
+	text-align: left;
+}
+
+.boardList .grey {
+	color: #bbb !important;
+}
+
+.boardList a {
+	text-decoration: none;
+	color: black;
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.boardList a:hover {
+	text-decoration: underline;
+}
+
+.boardList .level-2, .commentList .comment-2 {
+	padding-left: 20px;
+}
+
+.boardList .level-3, .commentList .comment-3 {
+	padding-left: 40px;
+}
+
+.boardList .level-4, .commentList .comment-4 {
+	padding-left: 60px
+}
+
+;
+.boardList .material-symbols-outlined.red {
+	color: red;
+}
+
+.notice.modal {
+	position: fixed;
+}
+
+.notice .modal-main-content {
+	min-height: 400px;
+	max-height: 400px;
+	overflow-y: scroll;
+	white-space: pre-wrap;
+}
+
+.commentList div[class*='comment-'] {
+	border-bottom: 1px solid #aaa;
+}
+
+.commentList div[class*='comment-']:last-child {
+	border: none;
+}
+
+.commentList .comment-content {
+	white-space: pre-wrap;
+}
+
+.commentList .material-symbols-outlined {
+	font-size: 12px;
+}
+
+.commentList .writer {
+	font-size: 14px;
+}
+
+button.btn-close {
+	font-size: 10px;
+}
+
+.boardSelect .likeBtn i, .socialList .likeBtn {
+	color: #aaa;
+	font-size: xx-large;
+}
+
+.boardSelect .likeBtn:hover, .socialList .likeBtn:hover {
+	cursor: pointer;
+}
+
+.boardSelect .likeBtn.liked i, .socialList .likeBtn.liked i {
+	color: red;
+}
+
+.boardSelect .date-text {
+	color: grey;
+	font-size: small;
+}
+
+.boardSelect .count-title {
+	font-size: large;
+}
+
+.boardSelect .thumbnailSign {
+	animation: blink-effect 1s step-end infinite;
+	font-weight: bold;
+	color: red;
+	font-size: small;
+	border: 1px solid red;
+	padding: 2px;
+	border-radius: 3px;
+}
+
+.boardSelect .owl-carousel {
+	max-width: 800px;
+}
+
+.boardSelect .owl-carousel .item {
+	min-height: 530px;
+}
+
+.boardSelect .owl-carousel .downloadBtn {
+	position: absolute;
+	z-index: 99;
+	top: 10px;
+	right: 10px;
+	background-color: #ccc;
+	padding: 10px;
+}
+
+.boardSelect .owl-carousel .downloadBtn:hover {
+	background-color: white;
+}
+
+.boardSelect .owl-carousel .lettering-box {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+}
+
+.boardSelect .owl-carousel .lettering-box span {
+	height: 100px;
+	color: white;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.galleryList form select {
+	width: 120px;
+}
+
+.galleryList form input[name='searchKeyword'] {
+	width: 200px;
+}
+
+.galleryList form button {
+	width: 90px;
+}
+
+.galleryList .tagList {
+	min-height: 50px;
+}
+
+.galleryList .fa-eye {
+	color: grey;
+}
+
+.galleryList .fa-heart {
+	color: red;
+}
+
+.boardInsert .preview, .boardUpdate .preview {
+	width: 100%;
+	overflow-x: auto;
+}
+
+.group-table tbody tr:hover, .code-table tbody tr:hover {
+	cursor: pointer;
+}
+
+.codeList .fa-plus, .codeList .fa-minus {
+	border: 1px solid black;
+	padding: 2px;
+}
+
+.codeList .fa-plus:hover, .codeList .fa-minus:hover {
+	cursor: pointer;
+	background: #283593;
+	color: white;
+}
+
+.codeList .list-group li:hover {
+	cursor: pointer;
+	font-weight: bold;
+}
+
+.codeList .gp-list>li:hover {
+	background: #65799b;
+	color: white;
+	border: white;
+}
+
+.codeList .cd-list li:hover {
+	background: #e2eff1;
+}
+
+.codeList .tree-body {
+	height: 800px;
+	overflow-y: auto;
+}
+
+.codeList .cross-btn {
+	font-size: 20px;
+	color: gray;
+}
+
+.codeList .code-input-form {
+	width: 250px;
+}
+
+.codeList .table {
+	table-layout: fixed;
+}
+
+.codeList .desc {
+	text-align: left;
+	max-width: 0;
+	max-height: 100px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.codeList .gp-list>li {
+	font-size: 18px;
+}
+
+#req-form-search {
+	width: 400px;
+}
+
+#req-form-search .form-group {
+	width: 50%;
+}
+
+#req-form-search [name='recordCountPerPage'] {
+	width: 120px;
+}
+
+#req-form-search [name='searchKeyword'] {
+	width: 120px;
+}
+
+.ck-editor__editable {
+	min-height: 400px;
+	max-height: 600px;
+	overflow-y: auto;
+}
+
+.req-tab-body {
+	min-height: 800px;
+	border-radius: 10px;
+}
+
+#adminModal, #objModal {
+	/* position: absolute; */
+	/* 	min-height: 400px; */
+	/* 	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%); */
+	
+}
+
+#adminModal .modal-body, #objModal .modal-body {
+	min-height: 400px;
+}
+
+.table-hover tr {
+	cursor: pointer;
+}
+
+#objHistoryModal {
+	/* position: absolute;
+	top: 20%;
+	left: 20%; */
+	
+}
+
+#objHistoryModal .modal-body {
+	min-width: 800px;
+	max-height: 700px;
+	overflow: auto;
+}
+
+.selRequest form {
+	border-radius: 10px;
+}
+
+.selRequest .border {
+	border-radius: 10px;
+}
+
+.selRequest #state-badge span {
+	padding: 10px 15px;
+	font-size: 20px;
+}
+
+.badge.stage-1 {
+	background: #FDD835;
+}
+
+.badge.stage-2 {
+	background: #1565C0;
+}
+
+.badge.stage-3 {
+	background: #D32F2F;
+}
+
+.badge.stage-4 {
+	background-color: #148F77;
+}
+
+.requestList .badge {
+	padding: 8px 10px;
+}
+
+.requestList .table {
+	table-layout: fixed;
+}
+
+.requestList .text-start {
+	position: relative;
+}
+
+.requestList .req-title {
+	width: 95%;
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.show-hide-btn {
+	font-size: 20px;
+}
+
+#page-navigation {
+	position: sticky;
+	z-index: 100;
+	left: 95%;
+	top: 5%;
+	background: white;
+	border: 2px solid gray;
+	width: 10%;
+	padding: 10px;
+}
+
+#page-navigation ul, #page-navigation li {
+	border: none;
+}
+
+#page-navigation ul {
+	list-style: none;
+}
+
+#page-navigation li {
+	padding: 5px;
+	text-align: right;
+}
+
+#page-navigation a {
+	text-decoration: none;
+	color: black;
+}
+
+.approve-0 {
+	background-color: red;
+}
+
+.approve-1 {
+	background-color: blue;
+}
+
+.menuList #body {
+	position: relative;
+}
+
+.menuList #insMenuModal {
+	position: absolute;
+	top: 25%;
+	left: 5%;
+}
+
+.menuList .table-hover tbody tr:hover td {
+	background-color: #CFD8DC;
+}
+
+.menuList .table-hover tbody tr {
+	cursor: pointer;
+}
+
+.menuList .table-hover thead {
+	background-color: #1A237E;
+}
+
+.menuList .table-hover thead th {
+	color: white;
+}
+
+.menuList .form-control:disabled, .form-select:disabled {
+	background-color: #E5E7E9;
+}
+
+.menuList .bg-delete {
+	background-color: #BBDEFB;
+}
+
+.socialList {
+	width: 80%;
+	margin: 0 auto;
+}
+
+.socialList .sns-search-container {
+	background-color: #3b5998;
+	color: white;
+	border-radius: 10px;
+	margin-bottom: 30px;
+}
+
+.socialList .sns-search-container .search-btn {
+	background-color: #D4D8E8;
+	color: #29487D;
+	font-weight: bold;
+}
+
+.socialList #insert-form {
+	border-radius: 10px;
+}
+
+.socialList .insert-form-header {
+	background-color: #3b5998;
+	color: white;
+	font-weight: bold;
+	margin-bottom: 0;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
+
+.socialList .insert-form-body {
+	background-color: #dfe3ee;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+.socialList .insert-form-body label {
+	font-weight: bold;
+}
+
+.socialList .insert-form-body .btn-container button {
+	font-weight: bold;
+}
+
+.socialList .insert-form-body .btn-container button:first-child {
+	background-color: #f7f7f7;
+}
+
+.socialList .insert-form-body .btn-container button:last-child {
+	background-color: #3b5998;
+	color: white;
+}
+
+.socialList .ck-editor__editable {
+	min-height: 200px;
+}
+
+.socialList .card-header {
+	background-color: #3b5998;
+	color: white;
+}
+
+.socialList .card-body {
+	min-height: 150px;
+}
+
+.socialList .card-footer {
+	background-color: #dfe3ee;
+}
+
+.socialList .card-header h4 {
+	font-weight: bold;
+}
+
+.socialList .no-comment-box {
+	padding: 20px;
+	margin-top: 20px;
+	border-radius: 10px;
+	background-color: white;
+}
+
+.socialList .comment-add-box {
+	background-color: #3b5998;
+	color: white;
+	position: relative;
+}
+
+.socialList .comment-add-box:before {
+	content: ' ';
+	height: 0;
+	width: 0;
+	position: absolute;
+	border: 20px solid transparent;
+	border-bottom-color: #3b5998;
+	border-top-width: 0;
+	top: -20px;
+}
+
+.socialList .comment-add-box .btn {
+	color: white;
+}
+
+.socialList .date {
+	font-size: 14px;
+	color: #dfe3ee;
+}
+
+.socialList .comment-container .date {
+	font-size: 12px;
+	color: 	#3b5998;
+}
+
+.galleryList .fa-spinner, .socialList .fa-spinner {
+	font-size: 20px;
+	animation: spin 2s linear infinite, color 0.5s infinite;
+}
+
+@keyframes color { 
+  0% {color: #C0392B;} 
+  25% {color: #DC7633;}
+  50% {color: #F8C471;}
+  100% {color: #F7DC6F;}
+}
+
+@keyframes spin {
+	from { transform:rotate(0);}
+to {
+	transform: rotate(360deg);
+	}
+}
+
+@media ( min-width : 576px) {
+	.galleryList .col.card {
+		height: 270px;
+	}
+	.galleryList .topBtn, .socialList .topBtn {
+		width: 30px;
+		height: 30px;
+	}
+}
+
+@media ( min-width : 768px) {
+	.galleryList .col.card {
+		height: 360px;
+	}
+}
+
+@media ( min-width : 992px) {
+	.galleryList .col.card {
+		height: 240px;
+	}
+	.galleryList .topBtn, .socialList .topBtn {
+		width: 40px;
+		height: 40px;
+	}
+}
+
+@media ( min-width : 1200px) {
+	.galleryList .col.card {
+		height: 285px;
+	}
+}
+
+@media ( min-width : 1400px) {
+	.galleryList .col.card {
+		height: 330px;
+	}
+	.galleryList .topBtn, .socialList .topBtn {
+		width: 50px;
+		height: 50px;
+	}
+}
+
+.galleryList form button {
+	width: 100px;
+}
+
+.galleryList .col.card {
+	position: relative;
+}
+
+.galleryList .selectLink {
+	display: block;
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.galleryList .tagList a {
+	z-index: 5;
+}
+
+.galleryList .tagList a:hover .tagList a>span {
+	background: red;
+}
+
+.galleryList .topBtn, .socialList .topBtn {
+	background: white;
+	border: 1px solid #03A9F4;
+	box-shadow: 5px 5px 5px 0px #ccc;
+	color: #03A9F4;
+	border-radius: 100%;
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	z-index: 999;
+}
+
+.galleryList .topBtn:hover, .socialList .topBtn:hover {
+	background: #03A9F4;
+	color: white;
+	cursor: pointer;
+}
+
+.galleryList  .tagTitle {
+	color: white;
+	border-radius: 5px;
+	width: 180px;
+	text-align: center;
+}
+
+.galleryList  .blue-title {
+	background-color: #3498DB;
+}
+
+.galleryList .red-title {
+	background-color: #E74C3C;
+}
+
+.galleryList  .recentTagList {
+	border-radius: 10px;
+	border: 1px solid #bbb;
+}
+
+.galleryList  .tagTypeList {
+	display: flex;
+}
+
+.reserveList .no-input-design {
+	border: none;
+	background: inherit;
+}
+
+.reserveList .occupied {
+	text-decoration: line-through;
+	color: gray;
+}
+
+.reserveList .time-table-wrapper {
+	border: 1px dotted black;
+	padding: 10px;
+	text-align: center;
+}
+
+.reserveList .time-table-wrapper p {
+	font-weight: bold;
+}
+
+.reserveList .time-table-wrapper .reserve-title {
+	color: red;
+}
+
+.reserveList .time-table-wrapper.r-prohibit .reserve-title {
+	color: gray;
+}
+
+.reserveList .fc-event {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.reserveList .fc-event-title {
+	font-size: 20px;
+	color: white;
+	font-weight: bold;
+	
+}
+
+.reserveList .active {
+	background-color: #F7DC6F;
+}
+
+.reserveList .seat-place {
+	position: relative;
+	min-height: 800px;
+}
+
+.reserveList .seat {
+	height: 120px;
+	width: 120px;
+	position: absolute;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-weight: bold;
+	font-size: 20px;
+	border: 2px solid #ccc;
+	cursor: pointer;
+}
+
+.reserveList .seat.occupied {
+	background-color: #ccc;
+}
+
+.reserveList .myReserveList {
+	padding: 70px;
+}
+
+.reserveManage .study-room-card {
+	min-height: 800px;
+}
+
+.reserveManage .manage-list {
+	min-height: 700px;
+	padding: 10px;
+	border: 2px solid gray;
+}
+
+.reserveManage .manage-list li {
+	font-weight: bold;
+}
+
+.reserveManage .manage-list li.active {
+	background-color: #1B4F72;
+	color: white; 
+}
+
+.reserveManage .manage-list li:hover {
+	cursor: pointer;
+}
+
+.reserveManage #seatModal {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.reserveManage #seat-div {
+	position: relative;
+	width: 800px;
+	height: 800px;
+	background: #F8F9F9;
+}
+
+.reserveManage .seat {
+	background-color: #1565C0;
+	color: white;
+	font-weight: bold;
+}
+
+.reserveManage .seat-btn {
+	border: none;
+	width: 140px;
+	padding: 10px;
+	margin-top: 2px;
+	font-weight: bold;
+	color: white;
+}
+
+.reserveManage .seat-btn:hover {
+	transform: scale(1.05);
+	transition: 1s;
+}
+
+.reserveManage .seat-btn:nth-child(1) {
+	background-color: #d72631;
+}
+
+.reserveManage .seat-btn:nth-child(2) {
+	background-color: #a2d5c6;
+}
+
+.reserveManage .seat-btn:nth-child(3) {
+	background-color: #077b8a;
+}
+
+.reserveManage .list-group-item.active {
+	background-color: #0D47A1;
+	color: white;
+	font-weight: bold;
+}
+
+#chat {
+	padding: 50px;
+	height: 800px;
+	border-radius: 10px;
+	background-color: #F4F6F6;
+	overflow-y: auto;
+}
+
+#chat div {
+	margin: 50px;
+}
+
+#chat .my-chat {
+	text-align: right;
+}
+
+#chat .my-chat span {
+	background-color: #21618C;
+	color: white;
+}
+
+#chat .not-my-chat span {
+	background-color: #FDFEFE;
+}
+
+#chat div span {
+	padding: 10px;
+	border-radius: 10px;
+}
+
+#chat p.enter-text {
+	font-size: 13px;
+	color: gray;
+}

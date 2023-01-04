@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.fusion.reserve.service.ReserveMapper">
+	
+	<select id="getStudyRoomList" parameterType="studyRoomVo" resultType="studyRoomVo">
+		SELECT ROOM_NO
+			 , ROOM_NM
+			 , ROOM_USEYN
+			 , ROOM_OPEN_TIME
+			 , ROOM_CLOSE_TIME
+		FROM STUDY_ROOM
+	</select>
+	
+	<select id="getManagementList" parameterType="managementVo" resultType="managementVo">
+		SELECT MANAGE_NO
+			 , MANAGE_START_DATE
+			 , MANAGE_END_DATE
+			 , MANAGE_REASON
+			 , MANAGE_DELYN
+		FROM MANAGEMENT
+		WHERE ROOM_NO = #{roomNo}
+		  AND MANAGE_DELYN = 'N'
+		  <choose>
+		  	<when test="currentMonth != null and currentMonth != ''">
+		  		AND TO_CHAR(MANAGE_START_DATE, 'YYYY-MM') = #{currentMonth}
+		  	</when>
+		  	<when test="currentDate != null and currentDate != ''">
+		  		AND TO_TIMESTAMP(#{currentDate}) BETWEEN MANAGE_START_DATE AND MANAGE_END_DATE
+		  	</when>
+		  </choose>
+	</select>
+	
+	<select id="getRoomSeatList" parameterType="roomSeatVo" resultType="roomSeatVo">
+		SELECT ROOM_NO
+			 , SEAT_NO
+			 , SEAT_LOC
+			 <if test="currentDate != null and currentDate != ''">
+			 , (
+			      SELECT DECODE(COUNT(*), 1, 'N', 0, 'Y')
+			      FROM SEAT_INACTIVATION
+			      WHERE ROOM_NO = A.ROOM_NO 
+			      	AND SEAT_NO = A.SEAT_NO
+			      	<choose>
+			      	<when test="currentHour != '00:00'">
+			      	AND TO_TIMESTAMP(CONCAT(#{currentDate}, #{currentHour}), 'YYYY-MM-DD HH24:MI:SS') >= INACTIVE_START_TIME
+			      	</when>
+			      	<otherwise>
+			      	AND TO_TIMESTAMP(CONCAT(#{currentDate}, #{openHour}), 'YYYY-MM-DD HH24:MI:SS') >= INACTIVE_START_TIME
+			      	</otherwise>
+			      	</choose>
+			      	<choose>
+			      	<when test="closeHour == '24:00'">
+			      	AND INACTIVE_END_TIME >= TO_TIMESTAMP(CONCAT(#{currentDate}, '23:59:59'), 'YYYY-MM-DD HH24:MI:SS')
+			      	</when>
+			      	<otherwise>
+			      	AND INACTIVE_END_TIME >= TO_TIMESTAMP(CONCAT(#{currentDate}, #{closeHour}), 'YYYY-MM-DD HH24:MI:SS')
+			      	</otherwise>
+			      	</choose>
+			   ) SEAT_AVAILYN
+			   </if>
+		FROM ROOM_SEAT A
+		WHERE ROOM_NO = #{roomNo}
+	</select>
+	
+	<select id="getMyReservationList" resultType="reservationVo">
+		SELECT * 
+		FROM (
+			    SELECT ROWNUM RN
+					,  RESERVE.*
+				FROM (
+					    SELECT RESERVE_NO
+							 , USER_NO
+							 , (
+							 	   SELECT USER_NAME
+							 	   FROM BOARD_USER
+							 	   WHERE USER_NO = A.USER_NO
+							 	) USER_NAME
+							 , ROOM_NO
+							 , SEAT_NO
+							 , RESERVE_DATE
+							 , RESERVE_IN_TIME
+							 , RESERVE_OUT_TIME
+							 , TO_TIMESTAMP(CONCAT(CONCAT(RESERVE_DATE, ' '), RESERVE_IN_TIME)) RESERVE_FULL_DATE
+							 , RESERVE_DELYN
+							 , RESERVE_REASON
+						FROM RESERVATION A
+						WHERE RESERVE_DELYN = 'N'
+						<if test="r.userNo != null and r.userNo != 0">
+						AND ROOM_NO = #{r.roomNo}
+						AND USER_NO = #{r.userNo}
+						</if>
+						ORDER BY RESERVE_NO DESC
+				      ) RESERVE
+			  )
+		WHERE RN BETWEEN 
+		(#{cri.pageIndex} - 1) * #{cri.recordCountPerPage} + 1
+		AND 
+		(#{cri.pageIndex} * #{cri.recordCountPerPage})
+	</select>
+	
+	<select id="getMyReservationTotal" resultType="Integer">
+		SELECT COUNT(*)
+		FROM RESERVATION 
+		WHERE RESERVE_DELYN = 'N'
+		<if test="userNo != null and userNo != 0">
+		AND ROOM_NO = #{roomNo}
+		AND USER_NO = #{userNo}
+		</if>
+	</select>
+	
+	<select id="getReservationList" parameterType="reservationVo" resultType="reservationVo">
+		SELECT RESERVE_NO
+			 , USER_NO
+			 , (
+			 	   SELECT USER_NAME
+			 	   FROM BOARD_USER
+			 	   WHERE USER_NO = A.USER_NO
+			 	) USER_NAME
+			 , ROOM_NO
+			 , SEAT_NO
+			 , RESERVE_DATE
+			 , RESERVE_IN_TIME
+			 , RESERVE_OUT_TIME
+			 , RESERVE_DELYN
+			 , RESERVE_REASON
+		FROM RESERVATION A
+		WHERE ROOM_NO = #{roomNo}
+		  <if test="seatNo != null and seatNo != 0">
+		  AND SEAT_NO = #{seatNo}
+		  </if>
+		  <if test="reserveDate != null and reserveDate != '' and (reserveInTime == null or reserveInTime == '')">
+		  AND RESERVE_DATE = #{reserveDate}
+		  </if>
+		  <if test="reserveChkStart != null and reserveChkStart != ''">
+		  AND RESERVE_DATE <![CDATA[>= #{reserveChkStart}]]> AND RESERVE_DATE <![CDATA[< #{reserveChkEnd}]]>
+		  </if>
+		  <if test="reserveInTime != null and reserveInTime != ''">
+		  AND RESERVE_DATE >= #{reserveDate}
+		  AND (RESERVE_IN_TIME <![CDATA[<]]> #{reserveInTime} 
+		  		OR RESERVE_OUT_TIME > #{reserveOutTime}) 
+		  </if>
+		  AND RESERVE_DELYN = 'N'
+	</select>
+	
+	<select id="getSeatInactivationList" parameterType="seatInactivationVo" resultType="seatInactivationVo">
+		SELECT ROOM_NO
+			 , SEAT_NO
+			 , INACTIVE_NO
+			 , INACTIVE_START_TIME
+			 , INACTIVE_END_TIME
+			 , INACTIVE_TYPE
+	    FROM SEAT_INACTIVATION
+	    WHERE ROOM_NO = #{roomNo}
+	      AND SEAT_NO = #{seatNo}
+	      AND INACTIVE_TYPE = 'INACTIVE'
+	      <if test="inactiveStartTime != null and inactiveStartTime != ''">
+	      AND INACTIVE_START_TIME <![CDATA[<=]]> #{inactiveStartTime}
+	      AND INACTIVE_END_TIME > #{inactiveStartTime}
+	      </if>
+	</select>
+	
+	<select id="selSeatInactivation" parameterType="seatInactivationVo" resultType="seatInactivationVo">
+		SELECT SEAT_NO
+		FROM SEAT_INACTIVATION
+		WHERE ROOM_NO = #{roomNo}
+		  AND SEAT_NO = #{seatNo}
+		  AND CONCAT(#{inactiveChkTime}, #{inactiveStartTime}) >= INACTIVE_START_TIME
+		  <choose>
+		  <when test="inactiveEndTime == '24:00'">
+		  AND CONCAT(#{inactiveChkTime}, ' 23:59:59') <![CDATA[<]]> INACTIVE_END_TIME
+		  </when>
+		  <otherwise>
+		  AND CONCAT(#{inactiveChkTime}, #{inactiveEndTime}) <![CDATA[<]]> INACTIVE_END_TIME
+		  </otherwise>
+		  </choose>
+	</select>
+	
+	<select id="selStudyRoom" parameterType="studyRoomVo" resultType="studyRoomVo">
+		SELECT ROOM_NO
+			 , ROOM_NM
+			 , ROOM_OPEN_TIME
+			 , ROOM_CLOSE_TIME
+		FROM STUDY_ROOM
+		WHERE ROOM_NO = #{roomNo}
+	</select>
+	
+	<select id="selReservation" parameterType="reservationVo" resultType="reservationVo">
+		SELECT RESERVE_NO
+		FROM RESERVATION
+		WHERE ROOM_NO = #{roomNo}
+		  <choose>
+			  <when test="reserveNo != null and reserveNo != 0">
+			  AND RESERVE_NO = #{reserveNo}
+			  </when>
+			  <otherwise>
+			  AND SEAT_NO = #{seatNo}
+			  AND RESERVE_DATE = #{reserveDate}
+			  AND #{reserveInTime} >= RESERVE_IN_TIME AND #{reserveInTime} <![CDATA[<]]> RESERVE_OUT_TIME
+			  </otherwise>
+		  </choose>
+		  AND RESERVE_DELYN = 'N'
+	</select>
+	
+	<update id="updStudyRoom" parameterType="studyRoomVo">
+		UPDATE STUDY_ROOM
+		SET ROOM_NM = #{roomNm}
+		  , ROOM_USEYN = #{roomUseyn}
+		  , ROOM_OPEN_TIME = #{roomOpenTime}
+		  , ROOM_CLOSE_TIME = #{roomCloseTime}
+		WHERE ROOM_NO = #{roomNo}
+	</update>
+	
+	<insert id="insRoomSeat" parameterType="java.util.List">
+	   <foreach item="seat" collection="list" index="index" separator=" " open="INSERT ALL" close="SELECT * FROM DUAL">
+	   INTO ROOM_SEAT (
+			       SEAT_NO
+			     , ROOM_NO
+			     , SEAT_LOC
+			   )
+	   VALUES 
+	   		  (
+	   			   (SELECT NVL(MAX(SEAT_NO), 0) + (#{index} + 1)
+	   			    FROM ROOM_SEAT 
+	   			    WHERE ROOM_NO = #{seat.roomNo})
+	   			 , #{seat.roomNo}
+	   			 , #{seat.seatLoc}
+	   		   )
+	   </foreach>
+	</insert>
+	
+	<update id="updRoomSeat" parameterType="java.util.List">
+		<foreach item="seat" collection="list" open="BEGIN" close=";END;" separator=";">
+			UPDATE ROOM_SEAT
+			SET SEAT_LOC = #{seat.seatLoc}
+			WHERE ROOM_NO = #{seat.roomNo}
+			  AND SEAT_NO = #{seat.seatNo}
+		</foreach>
+	</update>
+	
+	<insert id="insManagement" parameterType="managementVo">
+		INSERT INTO MANAGEMENT (
+								    MANAGE_NO
+								  , ROOM_NO
+								  , MANAGE_START_DATE
+								  , MANAGE_END_DATE
+								  , MANAGE_REASON
+								  , MANAGE_DELYN
+								)
+					   VALUES (
+					   			    MANAGE_NO_SEQ.NEXTVAL
+					   			  , #{roomNo}
+					   			  , #{manageStartDate}
+					   			  , #{manageEndDate}
+					   			  , #{manageReason}
+					   			  , 'N'
+					   		   )
+	</insert>
+	
+	<insert id="insReservation" parameterType="reservationVo">
+		INSERT INTO RESERVATION (
+								    RESERVE_NO
+								  , USER_NO
+								  , ROOM_NO
+								  , SEAT_NO
+						 		  , RESERVE_DATE
+						 		  , RESERVE_IN_TIME
+						 		  , RESERVE_OUT_TIME
+						 		  , RESERVE_REASON
+						 		  , RESERVE_DELYN
+							    )
+						 VALUES (
+						 			RESERVE_NO_SEQ.NEXTVAL
+						 		  , #{userNo}
+						 		  , #{roomNo}
+						 		  , #{seatNo}
+						 		  , #{reserveDate}
+						 		  , #{reserveInTime}
+						 		  , #{reserveOutTime}
+						 		  , #{reserveReason}
+						 		  , DEFAULT
+						 		)
+	</insert>
+	
+	<insert id="insSeatInactivation" parameterType="seatInactivationVo">
+		INSERT INTO SEAT_INACTIVATION (
+										  INACTIVE_NO
+										, ROOM_NO
+									    , SEAT_NO
+									    , INACTIVE_START_TIME
+									    , INACTIVE_END_TIME
+									    , INACTIVE_TYPE
+									  )
+							  VALUES (
+							   		      INACTIVE_NO_SEQ.NEXTVAL
+							  			, #{roomNo}
+							  		    , #{seatNo}
+							  		    , #{inactiveStartTime}
+							  		    , #{inactiveEndTime}
+							  		    , #{inactiveType}
+							  		 )
+	</insert>
+	
+	<update id="updReservation" parameterType="reservationVo">
+		UPDATE RESERVATION
+			SET RESERVE_DELYN = 'Y'
+		WHERE ROOM_NO = #{roomNo}
+		AND RESERVE_NO = #{reserveNo}
+		<selectKey keyProperty="reserveDate,seatNo" resultType="reservationVo" order="AFTER">
+			SELECT RESERVE_DATE, SEAT_NO
+			FROM RESERVATION
+			WHERE ROOM_NO = #{roomNo}
+			AND RESERVE_NO = #{reserveNo}
+		</selectKey>
+	</update>
+	
+	<delete id="delSeatInactivation" parameterType="seatInactivationVo">
+		DELETE 
+		FROM SEAT_INACTIVATION
+		WHERE ROOM_NO = #{roomNo}
+		AND SEAT_NO = #{seatNo}
+		AND #{inactiveStartTime} = TO_CHAR(INACTIVE_START_TIME, 'YYYY-MM-DD')
+	</delete>
+	
+	<delete id="delManagement" parameterType="managementVo">
+		UPDATE MANAGEMENT
+		SET MANAGE_DELYN = 'Y'
+		WHERE ROOM_NO = #{roomNo}
+		AND MANAGE_NO = #{manageNo}
+	</delete>
+	
+</mapper>

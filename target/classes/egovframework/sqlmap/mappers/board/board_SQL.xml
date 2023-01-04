@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.fusion.board.service.BoardMapper">
+	
+	<sql id="search">
+		<if test="cri.searchCnd != '' and cri.searchCnd != null">
+			<if test="cri.searchCnd == 'USER_NAME'">
+		      AND A.USER_NO IN (SELECT USER_NO
+		          				  FROM BOARD_USER 
+		         				  WHERE USER_NAME = #{cri.searchKeyword})
+		    </if>
+		    <if test="cri.searchCnd == 'BOARD_TITLE'">
+		      AND A.BOARD_TITLE LIKE '%'|| #{cri.searchKeyword} ||'%'
+		    </if>
+		    <if test="cri.searchCnd == 'BOARD_CONTENT'">
+		      AND A.BOARD_CONTENT LIKE '%'|| #{cri.searchKeyword} ||'%'
+		    </if>
+		    <if test="cri.searchCnd == 'ALL' || cri.searchCnd == 'TOTAL_SEARCH'">
+		      AND (A.BOARD_TITLE LIKE '%'|| #{cri.searchKeyword} ||'%'
+		      OR A.BOARD_CONTENT LIKE '%' || #{cri.searchKeyword} || '%'
+		      OR A.USER_NO IN (SELECT USER_NO
+			       			   FROM BOARD_USER 
+			  			  	   WHERE USER_NAME = #{cri.searchKeyword}))
+		    </if>
+		</if>
+	</sql>
+	
+	<sql id="default">
+	   <include refid="search"></include>
+		START WITH A.BOARD_PARENT_NO = 0
+		CONNECT BY PRIOR A.BOARD_NO = A.BOARD_PARENT_NO
+		ORDER SIBLINGS BY A.BOARD_NO DESC
+	</sql>
+
+	<sql id="notice">
+		AND BOARD_DELYN = 'N'
+		<include refid="search"></include>
+		ORDER BY A.BOARD_NO DESC
+	</sql>
+	
+	<sql id="social">
+		AND BOARD_DELYN = 'N'
+		<if test="cri.searchCnd != '' and cri.searchCnd != null">
+			<if test="cri.searchCnd == 'USER_NAME'">
+		      AND A.USER_NO IN (SELECT USER_NO
+		          				  FROM BOARD_USER 
+		         				  WHERE USER_NAME = #{cri.searchKeyword})
+		    </if>
+		    <if test="cri.searchCnd == 'BOARD_CONTENT'">
+		      AND REGEXP_REPLACE(A.BOARD_CONTENT, 
+		      <![CDATA['(&amp;|nbsp;|&lt;(/)?([A-Za-z0-9]|.|\s|\t|\n|\r\n)*?&gt;)']]>, '') 
+		      LIKE '%'|| #{cri.searchKeyword} ||'%'
+		    </if>
+		    <if test="cri.searchCnd == 'ALL' || cri.searchCnd == 'TOTAL_SEARCH'">
+		      AND (REGEXP_REPLACE(A.BOARD_CONTENT, 
+		      <![CDATA['(&amp;|nbsp;|&lt;(/)?([A-Za-z0-9]|.|\s|\t|\n|\r\n)*?&gt;)']]>, '') 
+		      LIKE '%'|| #{cri.searchKeyword} ||'%'
+		      OR A.USER_NO IN (SELECT USER_NO
+			       			   FROM BOARD_USER 
+			  			  	   WHERE USER_NAME = #{cri.searchKeyword}))
+		    </if>
+		</if>
+		ORDER BY A.BOARD_NO DESC
+	</sql>
+	
+	<sql id="gallery">
+		AND BOARD_DELYN = 'N'
+		<if test="cri.searchCnd != '' and cri.searchCnd != null">
+			<if test="cri.searchCnd == 'USER_NAME'">
+		      AND A.USER_NO IN (SELECT USER_NO
+		          				  FROM BOARD_USER 
+		         				  WHERE USER_NAME = #{cri.searchKeyword})
+		    </if>
+		    <if test="cri.searchCnd == 'BOARD_TITLE'">
+		      AND A.BOARD_TITLE LIKE '%'|| #{cri.searchKeyword} ||'%'
+		    </if>
+		    <if test="cri.searchCnd == 'BOARD_CONTENT'">
+		      AND A.BOARD_CONTENT LIKE '%'|| #{cri.searchKeyword} ||'%'
+		    </if>
+		    <if test="cri.searchCnd == 'ALL' || cri.searchCnd == 'TOTAL_SEARCH'">
+		      AND (A.BOARD_TITLE LIKE '%'|| #{cri.searchKeyword} ||'%'
+		      OR A.BOARD_CONTENT LIKE '%' || #{cri.searchKeyword} || '%'
+		      OR A.USER_NO IN (SELECT USER_NO
+			       			   FROM BOARD_USER 
+			  			  	   WHERE USER_NAME = #{cri.searchKeyword})
+			 OR A.BOARD_NO IN (SELECT BOARD_NO
+		      					   FROM BOARD_TAG
+		      					   WHERE TAG_CONTENT = #{cri.searchKeyword}))
+		    </if>
+		</if>
+		ORDER BY A.BOARD_NO DESC
+	</sql>
+	
+	<select id="getBoardList" resultType="boardVo">
+		SELECT * FROM
+		(SELECT ROWNUM RN 
+			  , BOARD.*
+		 FROM 
+				(SELECT A.BOARD_NO
+					  , A.BOARD_TITLE
+					  , A.BULLETIN_NO
+					  , A.BOARD_VIEW_CNT
+					  , A.BOARD_REG_DATE
+					  , A.BOARD_TYPE_NO
+					  , A.BOARD_PARENT_NO
+					  , A.BOARD_DELYN
+					  , A.BOARD_CONTENT
+					  , B.USER_NAME
+					  , A.USER_NO
+					<if test="board.boardTypeNo == 'DEFAULT'">
+					  , LEVEL AS BOARD_LEVEL 
+					</if>
+					<if test="board.boardTypeNo == 'GALLERY'">
+					  , (
+					        SELECT THUMBNAIL_PATH 
+					        FROM BOARD_FILE
+					   		WHERE BOARD_NO = A.BOARD_NO 
+					   		  AND FILE_IS_THUMBNAIL = 'Y'
+					   		  AND FILE_DELYN = 'N'
+					   	) AS THUMBNAIL_PATH
+					  , (
+					        SELECT COUNT(*)
+					        FROM BOARD_LIKES 
+					        WHERE LIKES_BOARD_NO = A.BOARD_NO
+					     ) AS BOARD_LIKE_CNT
+					</if>
+					<if test="board.boardTypeNo == 'SOCIAL'">
+						<if test="board.userNo != null">
+						, (
+						      SELECT COUNT(*)
+						   	  FROM BOARD_LIKES
+						      WHERE LIKES_BOARD_NO = A.BOARD_NO
+						        AND LIKES_USER_NO = #{board.userNo}
+						   ) BOARD_LIKE_YN
+					   </if>
+					, (
+					      SELECT COUNT(*)
+					      FROM BOARD_LIKES 
+					      WHERE LIKES_BOARD_NO = A.BOARD_NO
+					   ) AS BOARD_LIKE_CNT
+					</if>
+				FROM BOARD A
+				   , BOARD_USER B
+				WHERE 1 = 1
+				  AND A.USER_NO = B.USER_NO
+				  AND A.BOARD_TYPE_NO = #{board.boardTypeNo}
+				  AND A.BULLETIN_NO = #{board.bulletinNo}
+				<choose>
+					<when test="board.boardTypeNo == 'DEFAULT'">
+						<include refid="default"></include>
+					</when>
+					<when test="board.boardTypeNo == 'NOTICE'">
+						<include refid="notice"></include>
+					</when>
+					<when test="board.boardTypeNo == 'GALLERY'">
+						<include refid="gallery"></include>
+					</when>
+					<when test="board.boardTypeNo == 'SOCIAL'">
+						<include refid="social"></include>
+					</when>
+				</choose>
+				)	
+				BOARD) 
+		WHERE RN BETWEEN 
+			  (#{cri.pageIndex} - 1) * #{cri.recordCountPerPage} + 1
+			  AND 
+			  (#{cri.pageIndex} * #{cri.recordCountPerPage})
+	</select>
+	
+	<select id="getBoardListCnt" resultType="int">
+		SELECT COUNT(*)
+		FROM BOARD A, BOARD_USER B
+		WHERE 1 = 1
+		  AND A.USER_NO = B.USER_NO
+		  AND A.BOARD_TYPE_NO = #{board.boardTypeNo}
+		  AND A.BULLETIN_NO = #{board.bulletinNo}
+		<choose>
+			<when test="board.boardTypeNo == 'DEFAULT'">
+				<include refid="default"></include>
+			</when>
+			<when test="board.boardTypeNo == 'NOTICE'">
+				<include refid="notice"></include>
+			</when>
+			<when test="board.boardTypeNo == 'GALLERY'">
+				<include refid="gallery"></include>
+			</when>
+		</choose>
+	</select>
+	
+	<select id="getFileList" resultType="boardFileVo" parameterType="boardFileVo">
+		SELECT FILE_NO
+			 , BOARD_NO
+			 , FILE_ORI_NAME
+			 , FILE_STORED_NAME
+			 , FILE_PATH
+			 , FILE_EXTENSION
+			 , FILE_SIZE
+			 , FILE_ORDER
+			 , FILE_DOWN_CNT
+			 , THUMBNAIL_PATH
+			 , FILE_IS_THUMBNAIL
+		FROM BOARD_FILE
+		WHERE BOARD_NO = #{boardNo}
+		  AND FILE_DELYN = 'N'
+		ORDER BY FILE_REG_DATE
+	</select>
+	
+	<select id="getTagList" resultType="boardTagVo" parameterType="boardTagVo">
+		SELECT TAG_ORDER
+			 , TAG_CONTENT
+			 , BOARD_NO
+			 , TAG_NO
+		FROM BOARD_TAG
+		WHERE BOARD_NO = #{boardNo}
+		ORDER BY TAG_ORDER
+	</select>
+	
+	<select id="getRecentTagList" resultType="boardTagVo">
+		 SELECT *
+		 FROM ( 
+		   <if test="listType == 'recent'">
+		   SELECT TAG_CONTENT
+		   FROM (SELECT TAG_CONTENT,
+		                TAG_NO,
+		                ROW_NUMBER( ) OVER (PARTITION BY TAG_CONTENT
+		  			    ORDER BY TAG_NO DESC ) AS RN
+		         FROM BOARD_TAG)
+		         WHERE RN = 1
+		         ORDER BY TAG_NO DESC
+		    </if>
+		    <if test="listType == 'top'">
+		    SELECT TAG_CONTENT
+		    FROM (SELECT COUNT(TAG_CONTENT) TAG_SEARCH_CNT,
+		      			 TAG_CONTENT
+		    	  FROM BOARD_TAG_LOG
+		    	  GROUP BY TAG_CONTENT
+		    	  ORDER BY TAG_SEARCH_CNT DESC)
+		    </if>)
+		 WHERE ROWNUM <![CDATA[<=]]> 10
+	</select>
+	
+	<select id="getBoardLike" resultType="boardLikeVo">
+		SELECT LIKES_USER_NO
+			 , LIKES_BOARD_NO
+		FROM BOARD_LIKES
+		WHERE LIKES_USER_NO = #{likesUserNo}
+		  AND LIKES_BOARD_NO = #{likesBoardNo}
+	</select>
+
+	<insert id="insBoardPost" parameterType="boardVo">
+		<selectKey keyProperty="boardNo" resultType="int" order="BEFORE">
+			SELECT SEQ_BOARD.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO BOARD (   
+							  BOARD_NO
+						 	, USER_NO
+							, BOARD_TYPE_NO
+						    , BOARD_TITLE
+							, BOARD_CONTENT
+							, BOARD_VIEW_CNT
+							, BOARD_REG_DATE
+							, BOARD_MOD_DATE
+							, BOARD_DELYN
+							, BOARD_PARENT_NO
+							, BOARD_POPUPYN
+							, BULLETIN_NO
+							)
+					VALUES (   
+							   #{boardNo}
+							 , #{userNo}
+							 , #{boardTypeNo}
+							 , #{boardTitle}
+							 , #{boardContent}
+							 , DEFAULT
+							 , DEFAULT
+							 , NULL
+							 , DEFAULT
+							 , #{boardParentNo}
+							 , DEFAULT
+							 , #{bulletinNo}
+						   )
+	</insert>
+	
+	<insert id="insBoardFile" parameterType="boardFileVo">
+		INSERT INTO BOARD_FILE
+			VALUES (   
+					   SEQ_BOARD_FILE.NEXTVAL
+					 , #{boardNo}
+					 , #{fileOriName}
+					 , #{fileStoredName}
+					 , #{filePath}
+					 , #{fileExtension}
+					 , #{fileSize}
+					 <if test="fileRegDate != null">
+					 , #{fileRegDate}
+					 </if> 
+					 <if test="fileRegDate == null">
+					 , DEFAULT
+					 </if>
+					 , #{fileOrder}
+					 , DEFAULT
+					 , #{fileDownCnt}
+					 , #{thumbnailPath}
+					 , #{fileIsThumbnail}
+				  )   
+	</insert>
+	
+	<insert id="insBoardTag" parameterType="boardTagVo">
+		INSERT INTO BOARD_TAG
+			VALUES (   
+					   SEQ_BOARD_TAG.NEXTVAL
+					 , #{boardNo}
+					 , #{tagContent}
+					 , #{tagOrder}
+				   )   
+	</insert>
+	
+	<insert id="insBoardHistory" parameterType="boardHistoryVo">
+		INSERT INTO BOARD_HISTORY
+			VALUES (
+				  	   DEFAULT
+				     , #{visitBoardNo}
+				     , #{visitUserNo}
+				   )
+	</insert>
+	
+	<insert id="insBoardLike" parameterType="boardLikeVo">
+		INSERT INTO BOARD_LIKES
+			VALUES (   
+			           #{likesUserNo}
+			         , #{likesBoardNo}
+			       )
+	</insert>
+	
+	<insert id="insBoardTagLog" parameterType="boardTagVo">
+		INSERT INTO BOARD_TAG_LOG
+			VALUES (
+			           DEFAULT
+			         , #{tagContent}
+			       )
+	</insert>
+
+	<select id="getBoardPost" resultType="boardVo" parameterType="boardVo">
+		 SELECT A.BOARD_NO
+         	  , A.BOARD_TITLE
+         	  , A.BOARD_CONTENT
+         	  , A.BOARD_VIEW_CNT
+         	  , A.BULLETIN_NO
+         	  , A.BOARD_REG_DATE
+         	  , A.BOARD_MOD_DATE
+         	  , A.BOARD_TYPE_NO
+         	  , A.BOARD_PARENT_NO
+         	  , A.USER_NO
+         	  , A.BOARD_POPUPYN
+         	  , B.USER_NAME
+         	  , (
+         	        SELECT COUNT(*) 
+         	        FROM BOARD_LIKES 
+         	        WHERE LIKES_BOARD_NO = A.BOARD_NO
+         	     ) BOARD_LIKE_CNT
+         	  , (
+			        SELECT COUNT(*)
+			   	    FROM BOARD_LIKES
+			        WHERE LIKES_BOARD_NO = A.BOARD_NO
+			          AND LIKES_USER_NO = #{userNo}
+				 ) BOARD_LIKE_YN
+       	 FROM BOARD A
+       	    , BOARD_USER B
+         WHERE A.BOARD_NO = #{boardNo}
+           AND A.USER_NO = B.USER_NO
+           AND A.BOARD_DELYN = 'N'
+	</select>
+	
+	<select id="getBoardFile" resultType="boardFileVo" parameterType="boardFileVo">
+		SELECT FILE_NO
+			 , BOARD_NO
+			 , FILE_ORI_NAME
+			 , FILE_STORED_NAME
+			 , FILE_PATH
+			 , FILE_EXTENSION
+			 , FILE_REG_DATE
+			 , FILE_SIZE
+			 , FILE_ORDER
+			 , FILE_DOWN_CNT
+			 , THUMBNAIL_PATH
+			 , FILE_IS_THUMBNAIL
+		FROM BOARD_FILE
+		WHERE FILE_NO = #{fileNo}
+		  AND FILE_DELYN = 'N'
+	</select>
+	
+	<select id="getBoardHistory" parameterType="boardHistoryVo" resultType="boardHistoryVo">
+		SELECT VISIT_BOARD_NO
+		FROM BOARD_HISTORY
+		WHERE VISIT_BOARD_NO = #{visitBoardNo}
+			AND VISIT_USER_NO = #{visitUserNo}
+			AND TO_CHAR(VISIT_DATE, 'YYYY-MM-DD') = TO_CHAR(SYSTIMESTAMP, 'YYYY-MM-DD')
+	</select>
+
+	<update id="updBoardCnt" parameterType="boardVo">
+		UPDATE BOARD
+		SET BOARD_VIEW_CNT = (BOARD_VIEW_CNT + 1)
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+	
+	<update id="updFileDownCnt" parameterType="boardFileVo">
+		UPDATE BOARD_FILE
+		SET FILE_DOWN_CNT = FILE_DOWN_CNT + 1
+		WHERE FILE_NO = #{fileNo}
+	</update>
+	
+	<update id="updBoardFile" parameterType="boardFileVo">
+		UPDATE BOARD_FILE
+		<if test="fileNo != null and fileNo != 0">
+		SET FILE_IS_THUMBNAIL = #{fileIsThumbnail} 
+		  , THUMBNAIL_PATH = #{thumbnailPath}
+		WHERE FILE_NO = #{fileNo}
+		</if>
+		<if test="boardNo != null and boardNo != 0">
+		SET FILE_IS_THUMBNAIL = 'N'
+		WHERE BOARD_NO = #{boardNo} AND FILE_IS_THUMBNAIL = 'Y'
+		</if>
+	</update>
+	
+	<update id="updBoardPost" parameterType="boardVo">
+		UPDATE BOARD
+		SET BOARD_TITLE = #{boardTitle}
+		  , BOARD_CONTENT = #{boardContent}
+		  <if test="boardPopupyn != null and boardPopupyn != ''">
+		  , BOARD_POPUPYN = #{boardPopupyn}
+		  </if>
+		  , BOARD_MOD_DATE = DEFAULT
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+
+	<delete id="delBoardPost" parameterType="boardVo">
+		UPDATE BOARD
+		SET BOARD_DELYN = 'Y'
+		WHERE BOARD_NO = #{boardNo}
+	</delete>
+	
+	<delete id="delBoardFile" parameterType="boardFileVo">
+		UPDATE BOARD_FILE
+		SET FILE_DELYN = 'Y'
+		WHERE FILE_NO = #{fileNo}
+	</delete>
+	
+	<delete id="delBoardTag" parameterType="boardTagVo">
+		DELETE FROM BOARD_TAG
+		WHERE BOARD_NO = #{boardNo}
+	</delete>
+	
+	<delete id="delBoardLike" parameterType="boardLikeVo">
+		DELETE FROM BOARD_LIKES
+		WHERE LIKES_USER_NO = #{likesUserNo}
+			  AND LIKES_BOARD_NO = #{likesBoardNo}
+	</delete>
+
+</mapper>

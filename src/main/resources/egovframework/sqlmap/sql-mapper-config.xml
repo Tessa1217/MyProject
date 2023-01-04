@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"></setting>
+		<setting name="jdbcTypeForNull" value="VARCHAR"></setting>
+	</settings>
+    <typeAliases>
+		<typeAlias alias="boardVo" type="egovframework.fusion.board.vo.BoardVO"/>
+		<typeAlias alias="userVo" type="egovframework.fusion.user.vo.UserVO" />
+		<typeAlias alias="commentVo" type="egovframework.fusion.comment.vo.CommentVO" />
+		<typeAlias alias="boardHistoryVo" type="egovframework.fusion.board.vo.BoardHistoryVO"/>
+		<typeAlias alias="boardTagVo" type="egovframework.fusion.board.vo.BoardTagVO" />
+		<typeAlias alias="boardFileVo" type="egovframework.fusion.board.vo.BoardFileVO" />
+		<typeAlias alias="boardLikeVo" type="egovframework.fusion.board.vo.BoardLikeVO" />
+		<typeAlias alias="surveyVo" type="egovframework.fusion.survey.vo.SurveyVO"/>
+		<typeAlias alias="surveyQuestionVo" type="egovframework.fusion.survey.vo.SurveyQuestionVO"/>
+		<typeAlias alias="surveyOptionVo" type="egovframework.fusion.survey.vo.SurveyOptionVO"/>
+		<typeAlias alias="surveyAnswerVo" type="egovframework.fusion.survey.vo.SurveyAnswerVO"/>
+		<typeAlias alias="surveySubmitVo" type="egovframework.fusion.survey.vo.SurveySubmitVO"/>
+		<typeAlias alias="surveyResultVo" type="egovframework.fusion.survey.vo.SurveyResultVO"/>
+		<typeAlias alias="menuVo" type="egovframework.fusion.manage.vo.MenuVO"/>
+		<typeAlias alias="menuLogVo" type="egovframework.fusion.manage.vo.MenuLogVO"/>
+		<typeAlias alias="commonCodeVo" type="egovframework.fusion.cmmn.vo.CommonCodeVO"/>
+		<typeAlias alias="commonGroupVo" type="egovframework.fusion.cmmn.vo.CommonGroupVO"/>
+		<typeAlias alias="requestVo" type="egovframework.fusion.request.vo.RequestVO"/>
+		<typeAlias alias="responseVo" type="egovframework.fusion.request.vo.ResponseVO"/>
+		<typeAlias alias="managementVo" type="egovframework.fusion.reserve.vo.ManagementVO"/>
+		<typeAlias alias="roomSeatVo" type="egovframework.fusion.reserve.vo.RoomSeatVO"/>
+		<typeAlias alias="studyRoomVo" type="egovframework.fusion.reserve.vo.StudyRoomVO"/>
+		<typeAlias alias="reservationVo" type="egovframework.fusion.reserve.vo.ReservationVO"/>
+		<typeAlias alias="seatInactivationVo" type="egovframework.fusion.reserve.vo.SeatInactivationVO"/>
+		<typeAlias alias="chatRoomVo" type="egovframework.fusion.chat.vo.ChatRoomVO"/>
+		<typeAlias alias="chatMessageVo" type="egovframework.fusion.chat.vo.ChatMessageVO"/>
+		<typeAlias alias="chatLogVo" type="egovframework.fusion.chat.vo.ChatLogVO"/>
+    </typeAliases>
+</configuration>

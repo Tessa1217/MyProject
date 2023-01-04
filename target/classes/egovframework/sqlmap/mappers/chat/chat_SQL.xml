@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.fusion.chat.service.ChatMapper">
+	<select id="getChatRoomList" parameterType="chatRoomVo" resultType="chatRoomVo">
+		SELECT ROOM_NO
+			 , USER_NO
+			 , (
+			      SELECT USER_NAME
+			      FROM BOARD_USER
+			      WHERE USER_NO = A.USER_NO
+			   ) USER_NAME
+			 , ROOM_NAME
+		FROM CHATROOM A
+		WHERE ROOM_DELYN = 'N'
+	</select>
+	
+	<select id="getChatMessageList" resultType="chatLogVo">
+		SELECT USER_NO
+			 , (
+			 	   SELECT USER_NAME
+			 	   FROM BOARD_UESR
+			 	   WHERE USER_NO = A.USER_NO
+			 	) USER_NAME
+			 , MESSAGE_CONTENT
+		FROM CHAT_MESSAGE A
+		WHERE ROOM_NO = #{chat.roomNo}
+		  AND MESSAGE_REG_DATE > #{chat.roomEnterDate}
+		ORDER BY MESSAGE_NO DESC
+	</select>
+	
+	<select id="selChatRoom" parameterType="chatRoomVo" resultType="chatRoomVo">
+		SELECT ROOM_NO
+			 , USER_NO
+			 , ROOM_NAME
+		FROM CHATROOM 
+		WHERE ROOM_NO = #{roomNo}
+	</select>
+	
+	<select id="selChatLog" parameterType="chatLogVo" resultType="chatLogVo">
+		SELECT ROOM_NO
+		     , UESR_NO
+		     , ROOM_ENTER_DATE
+		FROM CHAT_LOG
+		WHERE ROOM_NO = #{roomNo}
+		  AND USER_NO = #{userNo} 
+	</select>
+	
+	<insert id="insChatLog" parameterType="chatLogVo">
+		INSERT INTO CHAT_LOG (
+							      ROOM_NO
+							    , USER_NO
+							    , ROOM_ENTER_DATE
+							  )
+					  VALUES (
+					              #{roomNo}
+					            , #{userNo}
+					            , SYSTIMESTAMP
+					          )
+	</insert>
+	
+	<insert id="insChatMessage" parameterType="chatMessageVo">
+		INSERT INTO CHAT_MESSAGE (
+								      MESSAGE_NO
+								    , ROOM_NO
+								    , USER_NO
+								    , MESSAGE_CONTENT
+								    , MESSAGE_REG_DATE
+								  )
+					      VALUES (
+					      		      MESSAGE_NO_SEQ.NEXTVAL
+					      		    , #{roomNo}
+					      		    , #{userNo}
+					      		    , #{messageContent}
+					      		    , SYSTIMESTAMP
+					      		  )
+	</insert>
+	
+</mapper>

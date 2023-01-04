@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN" "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+ 
+<tiles-definitions>
+    <definition name="layouts-tiles"         template="/WEB-INF/jsp/egovframework/views/cmmn/tiles-layout.jsp">
+        <put-attribute name="header"           value="/WEB-INF/jsp/egovframework/views/cmmn/header.jsp" />
+        <put-attribute name="body"           value=""/>
+        <put-attribute name="footer"        value="/WEB-INF/jsp/egovframework/views/cmmn/footer.jsp" />
+    </definition>
+ 
+    <definition name="*/*/*" extends="layouts-tiles">
+        <put-attribute name="body" value="/WEB-INF/jsp/egovframework/{1}/{2}/{3}.jsp" />
+    </definition>
+    
+     <definition name="login-layout"    		template="/WEB-INF/jsp/egovframework/views/cmmn/login-layout.jsp">
+    	<put-attribute name="body"   		value="" />
+    </definition>
+    
+    <definition name="*" extends="login-layout">
+    	<put-attribute name="body" value="/WEB-INF/jsp/egovframework/views/user/{1}.jsp" />
+    </definition> 
+ 
+</tiles-definitions>

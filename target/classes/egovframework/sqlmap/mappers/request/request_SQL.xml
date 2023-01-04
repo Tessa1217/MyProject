@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.fusion.request.service.RequestMapper">
+	
+	<sql id="reqFilter">
+		<where>
+			<if test="req.requesterNo != null and req.requesterNo != ''">
+				AND REQUESTER_NO = #{req.requesterNo}
+			</if>
+			<if test="cri.searchKeyword != null and cri.searchKeyword != '' and cri.searchCnd != 'ALL'">
+				AND REQ_STAGE = #{cri.searchKeyword}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="getRequestList" resultType="requestVo">
+		SELECT * 
+		FROM (
+				SELECT ROWNUM RN
+					,  REQUEST.*
+				FROM (
+						SELECT REQ_NO
+							,  REQUESTER_NO
+							,  (SELECT USER_NAME 
+								FROM BOARD_USER
+								WHERE USER_NO = REQUESTER_NO) REQUESTER_NM
+							,  REQ_TITLE
+							,  TO_CHAR(REQ_REG_DATE, 'YYYY-MM-DD') REQ_REG_DATE
+							,  NVL(TO_CHAR(REQ_MOD_DATE, 'YYYY-MM-DD'), '-') REQ_MOD_DATE
+							,  REQ_STAGE
+							,  REQ_APPROVEYN
+						FROM REQUEST
+						<include refid="reqFilter"></include>
+						ORDER BY REQ_NO DESC
+					) REQUEST
+			)
+		WHERE RN BETWEEN 
+		(#{cri.pageIndex} - 1) * #{cri.recordCountPerPage} + 1
+		AND 
+		(#{cri.pageIndex} * #{cri.recordCountPerPage})
+	</select>
+	
+	<select id="getRequestCnt" resultType="Integer">
+		SELECT COUNT(*)
+		FROM REQUEST
+		<include refid="reqFilter"></include>
+		ORDER BY REQ_NO
+	</select>
+	
+	<select id="getResponseList" resultType="responseVo">
+		SELECT REQ_NO
+			,  RESP_NO
+			,  RESPONSER_NO
+			,  (SELECT USER_NAME
+				FROM BOARD_USER
+				WHERE USER_NO = RESP.RESPONSER_NO) RESPONSER_NM
+			,  RESP_CONTENT
+			,  TO_CHAR(RESP_REG_DATE, 'YYYY-MM-DD HH24:MI:SS') RESP_REG_DATE
+			,  NVL(TO_CHAR(RESP_MOD_DATE, 'YYYY-MM-DD HH24:MI:SS'), '-') RESP_MOD_DATE
+			,  RESP_DEGREE
+			,  RESP_TYPE
+		FROM RESPONSE RESP
+		WHERE REQ_NO = #{reqNo}
+		ORDER BY RESP_DEGREE
+	</select>
+	
+	<select id="selRequest" resultType="requestVo">
+		SELECT REQ_NO
+			,  REQUESTER_NO
+			,  (SELECT USER_NAME 
+				FROM BOARD_USER
+				WHERE USER_NO = REQUESTER_NO) REQUESTER_NM
+			,  REQ_TITLE
+			,  REQ_CONTENT
+			,  TO_CHAR(REQ_REG_DATE, 'YYYY-MM-DD HH24:MI:SS') REQ_REG_DATE
+			,  NVL(TO_CHAR(REQ_MOD_DATE, 'YYYY-MM-DD HH24:MI:SS'), '-') REQ_MOD_DATE
+			,  REQ_STAGE
+			,  REQ_APPROVEYN
+			,  (SELECT NVL(MAX(RESP_DEGREE), 0) 
+			    FROM RESPONSE 
+			    WHERE REQ_NO = #{reqNo}) OBJ_CNT
+			,  (SELECT RESP_NO
+				FROM RESPONSE 
+				WHERE REQ_NO = #{reqNo}
+				AND RESP_TYPE = 'REVIEWED'
+				AND RESP_DEGREE = 0) REQ_REVIEW_NO
+		FROM REQUEST
+		WHERE REQ_NO = #{reqNo}
+	</select>
+	
+	<insert id="insRequest" parameterType="requestVo">
+		<selectKey keyProperty="reqNo" resultType="Integer" order="BEFORE">
+			SELECT REQ_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO REQUEST (
+							  REQ_NO
+							, REQUESTER_NO
+							, REQ_TITLE
+							, REQ_CONTENT
+							, REQ_REG_DATE
+							, REQ_MOD_DATE
+							, REQ_STAGE
+							, REQ_APPROVEYN
+							)
+				VALUES (
+				         #{reqNo}
+				       , #{requesterNo}
+				       , #{reqTitle}
+				       , #{reqContent}
+				       , SYSTIMESTAMP
+				       , NULL
+				       , 1
+				       , 0
+				        )
+	</insert>
+	
+	<insert id="insResponse" parameterType="responseVo">
+		INSERT INTO RESPONSE (
+								REQ_NO
+							  , RESP_NO
+							  , RESPONSER_NO
+							  , RESP_CONTENT
+							  , RESP_REG_DATE
+							  , RESP_MOD_DATE
+							  , RESP_DEGREE
+							  , RESP_TYPE
+							  )
+					VALUES (
+							   #{reqNo}
+							,  RESP_SEQ.NEXTVAL
+							,  #{responserNo}
+							,  #{respContent}
+							,  SYSTIMESTAMP
+							,  NULL
+							,  #{respDegree}
+							,  #{respType}
+							)
+	</insert>
+	
+	<update id="updRequest" parameterType="requestVo">
+		UPDATE REQUEST
+		<set>
+			<if test="reqTitle != null and reqTitle != ''">
+				REQ_TITLE = #{reqTitle},
+			</if>
+			<if test="reqContent != null and reqContent != ''">
+				REQ_CONTENT = #{reqContent},
+			</if>
+			<if test="reqApproveyn != null and reqApproveyn != ''">
+				REQ_APPROVEYN = #{reqApproveyn},
+			</if>
+			<if test="reqStage != null and reqStage != ''">
+				REQ_STAGE = #{reqStage},
+			</if>
+		  REQ_MOD_DATE = SYSTIMESTAMP
+		</set>
+		WHERE REQ_NO = #{reqNo}
+	</update>
+	
+	<update id="updResponse" parameterType="responseVo">
+		UPDATE RESPONSE
+		<set>
+			<if test="respContent != null and respContent != ''">
+				RESP_CONTENT = #{respContent},
+			</if>
+			RESP_MOD_DATE = SYSTIMESTAMP
+		</set>
+		WHERE REQ_NO = #{reqNo} AND RESP_NO = #{respNo}
+	</update>
+		
+</mapper>

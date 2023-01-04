@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.fusion.manage.service.ManageMapper">
+	
+	<select id="getMenuList" resultType="menuVo">
+		SELECT MENU_NO
+			,  MENU_NM
+			,  MENU_PATH
+			,  MENU_PATH||DECODE(MENU_PARAMETER, NULL, '', CHR(038)||MENU_PARAMETER) FULL_PATH
+			,  MENU_ORDER
+			,  MENU_ICON
+			,  MENU_TYPE
+			,  MENU_PARAMETER
+			,  MENU_DELYN
+			,  MENU_TARGET
+		FROM MENU
+		<where>
+			<if test='menuDelyn == null or menuDelyn == "N"'>
+			AND MENU_DELYN = 'N'
+			</if>
+			<if test="userAuthCode != null and userAuthCode != ''">
+			AND MENU_NO IN (SELECT MENU_NO
+							  FROM MENU_GROUP
+							  WHERE USER_AUTH_CODE = #{userAuthCode})
+			</if>
+		</where>
+		ORDER BY MENU_ORDER
+	</select>
+	
+	<sql id="yearStat">
+		SELECT *
+	    FROM (
+			SELECT 
+			 (
+		      SELECT MENU_NM
+			  FROM MENU
+			  WHERE MENU_NO = L.MENU_NO
+			  ) MENU_NM
+			  ,  TO_CHAR(MENU_LOG_TIME, 'YYYY') MENU_LOG_COL
+			  FROM MENU_LOG L
+			  )
+		PIVOT(
+			 COUNT(*)
+			 FOR MENU_LOG_COL IN ('2022' YEAR1, '2021' YEAR2, '2020' YEAR3)
+			  )
+	</sql>
+	
+	<sql id="monthStat">
+		SELECT (
+		      SELECT MENU_NM
+			  FROM MENU
+			  WHERE MENU_NO = L.MENU_NO
+			  ) MENU_NM
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '1', 1, 0)) "num1"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '2', 1, 0)) "num2"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '3', 1, 0)) "num3"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '4', 1, 0)) "num4"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '5', 1, 0)) "num5"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '6', 1, 0)) "num6"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '7', 1, 0)) "num7"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '8', 1, 0)) "num8"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '9', 1, 0)) "num9"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '10', 1, 0)) "num10"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '11', 1, 0)) "num11"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'FMMM'), '12', 1, 0)) "num12"
+		FROM MENU_LOG L
+		GROUP BY MENU_NO
+		ORDER BY MENU_NM
+	</sql>
+	
+	<sql id="dayStat">
+		SELECT (
+		      SELECT MENU_NM
+			  FROM MENU
+			  WHERE MENU_NO = L.MENU_NO
+			  ) MENU_NM
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '01', 1, 0)) "num1"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '02', 1, 0)) "num2"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '03', 1, 0)) "num3"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '04', 1, 0)) "num4"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '05', 1, 0)) "num5"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '06', 1, 0)) "num6"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '07', 1, 0)) "num7"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '08', 1, 0)) "num8"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '09', 1, 0)) "num9"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '10', 1, 0)) "num10"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '11', 1, 0)) "num11"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '12', 1, 0)) "num12"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '13', 1, 0)) "num13"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '14', 1, 0)) "num14"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '15', 1, 0)) "num15"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '16', 1, 0)) "num16"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '17', 1, 0)) "num17"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '18', 1, 0)) "num18"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '19', 1, 0)) "num19"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '20', 1, 0)) "num20"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '21', 1, 0)) "num21"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '22', 1, 0)) "num22"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '23', 1, 0)) "num23"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '24', 1, 0)) "num24"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '25', 1, 0)) "num25"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '26', 1, 0)) "num26"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '27', 1, 0)) "num27"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '28', 1, 0)) "num28"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '29', 1, 0)) "num29"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '30', 1, 0)) "num30"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'DD'), '31', 1, 0)) "num31"
+		FROM MENU_LOG L
+		GROUP BY MENU_NO
+		ORDER BY MENU_NM
+	</sql>
+	
+	<sql id="timeStat">
+		SELECT (
+		      SELECT MENU_NM
+			  FROM MENU
+			  WHERE MENU_NO = L.MENU_NO
+			  ) MENU_NM
+			,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '00', 1, 0)) "num0"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '01', 1, 0)) "num1"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '02', 1, 0)) "num2"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '03', 1, 0)) "num3"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '04', 1, 0)) "num4"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '05', 1, 0)) "num5"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '06', 1, 0)) "num6"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '07', 1, 0)) "num7"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '08', 1, 0)) "num8"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '09', 1, 0)) "num9"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '10', 1, 0)) "num10"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '11', 1, 0)) "num11"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '12', 1, 0)) "num12"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '13', 1, 0)) "num13"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '14', 1, 0)) "num14"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '15', 1, 0)) "num15"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '16', 1, 0)) "num16"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '17', 1, 0)) "num17"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '18', 1, 0)) "num18"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '19', 1, 0)) "num19"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '20', 1, 0)) "num20"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '21', 1, 0)) "num21"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '22', 1, 0)) "num22"
+		    ,  SUM(DECODE(TO_CHAR(MENU_LOG_TIME, 'HH24'), '23', 1, 0)) "num23"
+		FROM MENU_LOG L
+		GROUP BY MENU_NO
+		ORDER BY MENU_NM
+	</sql>
+	
+	<select id="getMenuStatList" parameterType="menuLogVo" resultType="menuLogVo">
+		<if test="menuStatType == 'year'">
+			<include refid="yearStat"/>
+		</if>
+		<if test="menuStatType == 'month'">
+			<include refid="monthStat"/>
+		</if>
+		<if test="menuStatType == 'day'">
+			<include refid="dayStat"/>
+		</if>
+		<if test="menuStatType == 'time'">
+			<include refid="timeStat"/>
+		</if>
+	</select>
+	
+	<select id="selMenu" resultType="menuVo">
+		SELECT MENU_PATH
+			,  MENU_TARGET
+		FROM MENU
+		WHERE MENU_NO = #{menuNo}
+	</select>
+	
+	<select id="getMenuGroupList" resultType="String" parameterType="menuVo">
+		SELECT USER_AUTH_CODE
+		FROM MENU_GROUP
+		WHERE MENU_NO = #{menuNo}
+	</select>
+	
+	<insert id="insMenu" parameterType="menuVo">
+		<selectKey resultType="Integer" keyProperty="menuNo" order="BEFORE">
+			SELECT MENU_NO_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO MENU (
+						  MENU_NO
+						, MENU_NM
+						, MENU_PATH
+						, MENU_ORDER
+						, MENU_ICON	
+						, MENU_TARGET
+						, MENU_DELYN
+						, MENU_TYPE
+						<if test="menuType != 'link'">
+						, MENU_PARAMETER
+						</if>
+							)
+					VALUES (
+							#{menuNo}
+						  , #{menuNm}
+						  , #{menuPath}
+						  , (SELECT MAX(MENU_ORDER) + 1 FROM MENU)
+						  , #{menuIcon}
+						  , #{menuTarget}
+						  , 'N'
+						  , #{menuType}
+						  <if test="menuType != 'link'">
+						  , (SELECT 'bulletinNo='||(MAX(TO_NUMBER(SUBSTR(MENU_PARAMETER, 12))) + 1) FROM MENU)
+						  </if>
+							)
+	</insert>
+	
+	<insert id="insMenuGroup" parameterType="menuVo">
+		INSERT INTO MENU_GROUP (
+								MENU_NO
+							  , USER_AUTH_CODE 
+								)
+						VALUES (
+								#{menuNo}
+							  , #{userAuthCode}
+								)
+	</insert>
+	
+	<insert id="insMenuLog" parameterType="menuLogVo">
+		INSERT INTO MENU_LOG (
+							  MENU_LOG_NO
+							, MENU_NO
+							, MENU_LOG_TIME
+							)
+					VALUES (
+							 MENU_LOG_SEQ.NEXTVAL
+					 	   , #{menuNo}
+					 	   , DEFAULT	
+							)
+	</insert>
+	
+	<update id="updMenu" parameterType="menuVo">
+		UPDATE MENU 
+		SET MENU_NM = #{menuNm}
+		  , MENU_ORDER = #{menuOrder}
+		  , MENU_DELYN = #{menuDelyn}
+		  , MENU_TARGET = #{menuTarget}
+		  , MENU_PATH = #{menuPath}
+		  , MENU_PARAMETER = #{menuParameter}
+		WHERE MENU_NO = #{menuNo} 
+	</update>
+	
+	<update id="updMenuOrder" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="DECLARE BEGIN" separator=";" close="; END;">	
+			UPDATE MENU
+			SET MENU_ORDER = #{item.menuOrder}
+			WHERE MENU_NO = #{item.menuNo}
+		</foreach>
+	</update>
+
+	<delete id="delMenuGroup" parameterType="menuVo">
+		DELETE FROM MENU_GROUP
+		WHERE MENU_NO = #{menuNo}
+	</delete>
+
+</mapper>
