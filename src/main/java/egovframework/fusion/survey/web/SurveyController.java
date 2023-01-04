@@ -1,3 +1,13 @@
+/*********************************************************************
+ * 업 무 명 : 설문 컨트롤러
+ * 설 명 : 설문 화면에서 사용 
+ * 작 성 자 : 권유진
+ * 작 성 일 : 2022.11.30
+ * 관련테이블 : SURVEY, SURVEY_ANSWER, SURVEY_QUESTION, 
+ 	         SURVEY_QUESTION_OPTION, SURVEY_OPTION  
+ * Copyright ⓒ fusionsoft.co.kr
+ *
+ *********************************************************************/
 package egovframework.fusion.survey.web;
 
 import java.util.ArrayList;

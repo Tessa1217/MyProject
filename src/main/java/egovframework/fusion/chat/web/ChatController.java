@@ -1,3 +1,12 @@
+/*********************************************************
+ * 업 무 명 : 채팅 컨트롤러
+ * 설 명 : 채팅 화면에서 사용 
+ * 작 성 자 : 권유진
+ * 작 성 일 : 2022.12.23
+ * 관련테이블 : CHATROOM, CHAT_MESSAGE, CHAT_LOG
+ * Copyright ⓒ fusionsoft.co.kr
+ *
+ *********************************************************/
 package egovframework.fusion.chat.web;
 
 import java.util.ArrayList;

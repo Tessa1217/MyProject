@@ -1,29 +1,30 @@
+/*********************************************************
+ * 업 무 명 : 게시판 파일 컨트롤러
+ * 설 명 : SNS 게시판 텍스트 에디터(CKEDITOR) 파일 업로드/조회 시 사용
+ * 작 성 자 : 권유진
+ * 작 성 일 : 2022.12.20
+ * 관련테이블 : 
+ * Copyright ⓒ fusionsoft.co.kr
+ *
+ *********************************************************/
 package egovframework.fusion.board.web;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.UUID;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,8 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import egovframework.fusion.board.service.BoardService;
-import egovframework.fusion.board.vo.BoardFileVO;
-import egovframework.fusion.board.vo.BoardVO;
 
 @Controller
 public class BoardFileController {

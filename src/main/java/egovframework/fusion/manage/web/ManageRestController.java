@@ -1,3 +1,12 @@
+/*********************************************************************
+ * 업 무 명 : 관리 API 컨트롤러
+ * 설 명 : 메뉴 통계 조회, 메뉴 생성/수정/삭제, 공통 코드 생성/수정/삭제 화면에서 사용 
+ * 작 성 자 : 권유진
+ * 작 성 일 : 2022.11.30
+ * 관련테이블 : COMMON_CODE, COMMON_GROUP, MENU, MENU_GROUP, MENU_LOG 
+ * Copyright ⓒ fusionsoft.co.kr
+ *
+ *********************************************************************/
 package egovframework.fusion.manage.web;
 
 import java.util.ArrayList;

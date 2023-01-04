@@ -1,3 +1,12 @@
+/*********************************************************************
+ * 업 무 명 : 유저 컨트롤러
+ * 설 명 : 로그인/로그아웃, 회원가입 화면에서 사용 
+ * 작 성 자 : 권유진
+ * 작 성 일 : 2022.10.30
+ * 관련테이블 : BOARD_USER
+ * Copyright ⓒ fusionsoft.co.kr
+ *
+ *********************************************************************/
 package egovframework.fusion.user.web;
 
 import javax.servlet.http.HttpServletResponse;

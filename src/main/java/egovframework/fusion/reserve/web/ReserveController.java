@@ -1,3 +1,12 @@
+/*********************************************************************
+ * 업 무 명 : 예약 컨트롤러
+ * 설 명 : 독서실 예약 화면에서 사용 
+ * 작 성 자 : 권유진
+ * 작 성 일 : 2022.12.15
+ * 관련테이블 : ROOM_SEAT, SEAT_INACTIVATION, STUDY_ROOM, RESERVATION 
+ * Copyright ⓒ fusionsoft.co.kr
+ *
+ *********************************************************************/
 package egovframework.fusion.reserve.web;
 
 import java.text.ParseException;
